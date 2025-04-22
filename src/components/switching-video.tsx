@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import '../styles/globals.css';
+import '../styles/global.css';
 
 const videoSources = [
   'iStock-803920034.mp4',
