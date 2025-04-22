@@ -1,0 +1,70 @@
+---
+import Navbar from '../components/navbar';
+import Layout from '../layouts/Layout.astro';
+import { supabase } from "../lib/supabase";
+import { DirectionAwareHoverDemo } from '../components/direction-aware-hover-demo';
+
+const { cookies, redirect, url } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+let user = null;
+
+let pathname = url.pathname;
+
+if (accessToken && refreshToken) {
+  const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+
+  if (!error) {
+    user = data.user ?? null;
+  } else {
+    cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+  }
+}
+---
+
+<Layout title="Maximal Asset Management - Jobs">
+  <section class="z-50 absolute">
+    <Navbar pathname={pathname} user={user} client:idle />
+  </section>
+  <section class="py-24 space-y-8">
+    <h2 class="text-3xl font-bold text-center text-gray-900 my-6">Job Openings</h2>
+    <DirectionAwareHoverDemo client:load />
+    <div class="my-8 text-balance lg:!text-balance p-6 rounded-lg max-w-4xl mx-auto">
+      <p class="text-left text-md text-balance mx-auto">We welcome people from a range of quant backgrounds. This includes physicists, mathematicians, specialized technologists, portfolio managers, quantitative analysts and so forth.</p>
+      <p class="mt-6 text-lg text-gray-700 text-left">If you are interested, send your CV to <a href="mailto:careers@maximalam.com" class="text-blue-500 underline">careers@maximalam.com</a>.</p>
+      <br />
+      <h3 class="text-2xl font-semibold text-left text-gray-800 mb-4">Quantitative Analyst, Associate, New York, NY</h3>
+      <p class="mt-2 text-lg text-gray-700 text-left ">Maximal is keen to bring on board analysts from long short market neutral backgrounds who have experience in numerous industrial sectors such as consumer, TMT, energy, healthcare among others.</p>
+      <p class="mt-2 text-lg text-gray-700 text-left">Maximal offers three investment strategies — global income long bias, ESG long bias, and equity market neutral to institutional investors.</p>
+      <h4 class="text-xl font-semibold mt-6 text-gray-800">Responsibilities:</h4>
+      <ul class="list-disc list-outside max-w-2xl text-gray-700 text-lg pl-5">
+        <li>Conduct fundamental research and analysis on a wide range of companies across various sectors.</li>
+        <li>Identify investment opportunities and generate actionable investment ideas for the portfolio managers.</li>
+        <li>Build detailed financial models to forecast company performance and evaluate potential returns.</li>
+        <li>Perform thorough due diligence on investment opportunities, including industry analysis, competitive positioning, and management assessment.</li>
+      </ul>
+
+      <h4 class="text-xl font-semibold mt-6 text-gray-800">Requirements:</h4>
+      <ul class="list-disc list-outside max-w-2xl text-gray-700 text-lg pl-5">
+        <li>Bachelor's degree in finance, physics, economics, mathematics, or related field. Advanced degree holders in said disciplines are also encouraged to apply.</li>
+        <li>Proven experience as an Equity Analyst or similar role in a market-neutral hedge fund.</li>
+        <li>Providing quantitative analysis and risk reports used by portfolio managers for investor and client discussions.</li>
+        <li>Proficiency in financial modeling.</li>
+        <li>Ability to work in a fast-paced, dynamic environment and thrive under pressure.</li>
+        <li>CFA, CAIA, or similar professional designation preferred.</li>
+        <li>Strong Python coding experience and/or quantum computing experience.</li>
+      </ul>
+      <p class="mt-6 text-lg text-gray-700 text-left">If you are interested, send your CV to <a href="mailto:careers@maximalam.com" class="text-blue-500 underline">careers@maximalam.com</a>.</p>
+    </div>
+  </section>
+</Layout>

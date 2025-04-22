@@ -1,0 +1,128 @@
+---
+import Navbar from '../components/navbar';
+import SwitchingVideo from '../components/switching-video';
+import Layout from '../layouts/Layout.astro';
+import { supabase } from "../lib/supabase";
+
+const { cookies, redirect, url } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+  return redirect("/signin");
+}
+
+let user = null;
+
+let pathname = url.pathname;
+
+if (accessToken && refreshToken) {
+  const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+
+  if (!error) {
+    user = data.user ?? null;
+  } else {
+    cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+  }
+}
+
+const data = [
+  {
+    name: "Byron Wilson",
+    position: "CEO, Co-Founder, and Co-CIO",
+    linkedin: "https://www.linkedin.com/in/mrbyronwilson/",
+    description: [
+      'Partner, Manhattan Atlantic Capital, LLC Mid cap private equity firm with a focus on the healthcare and consumer sectors',
+      'Visiting Assistant Professor, University College London Taught Masters Infrastructure, Finance and Investment',
+      'Assistant Professor, Anglia Ruskin University Course taught: Economics.',
+      'Assistant Professor, Coventry University Courses taught: Corporate Finance, Managerial Finance',
+      'Director, Putnam Capital Mid Cap private equity firm.'
+    ],
+    education: [
+      'University of Cambridge, MBA Finance',
+      'University of Michigan, MPA Economics',
+      'Johns Hopkins University, MSc Strategic Marketing'
+    ],
+    photo: "byron.jpg",
+  },
+  {
+    name: "Nick Oleng",
+    position: "Co-founder and CIO",
+    linkedin: "https://www.linkedin.com/in/nicholas-oleng-9284004/",
+    description: [
+      'Senior Vice President, PIMCO Investment research and portfolio management of market-neutral equity strategies for a circa $3 billion multi-asset alternative risk premia fund. Spearheads a mandate to research, develop and manage long-only quantitative equity products for the firm.',
+      'Vice President, Senior Quantitative Analyst, AllianceBernstein Helped manage AB US Strategic Equities Fund (as of Dec 2017 $17 billion AUM) which was distributed to Alliance Bernstein’s HNW private clients. Also, my work involved the design of an ESG version of the same strategy.',
+      'Quantitative Analyst, The Vanguard Group',
+      'Associate, Quantitative Analyst, Goldman Sachs'
+    ],
+    education: [
+      'Yale University, PhD Electrical Engineering',
+      'Yale University, BS Electrical Engineering & Economics'
+    ],
+    photo: "nick.jpg",
+  }
+];
+---
+
+<Layout title="Maximal Asset Management - Team">
+  <section class="z-50 absolute">
+    <Navbar pathname={pathname} user={user} client:idle />
+  </section>
+  <section class="relative flex items-center justify-center overflow-hidden pt-[400px] sm:pt-[500px] md:pt-[600px] lg:pt-[700px]">
+    <div class="mt-px video-container absolute left-12 top-24 w-auto min-h-full min-w-full max-h-[90vh] max-w-none object-cover bg-blue-900 border-transparent" />
+    <SwitchingVideo client:load />
+    <div class="banner-grow absolute left-12 bottom-0 right-0 h-16 md:h-32 lg:h-16 bg-blue-900 opacity-90">
+      <h1 class="text-fade-in font-serif text-2xl sm:text-3xl md:text-4xl lg:text-7xl text-white text-left h-full flex items-center px-4 lg:px-8 w-full max-w-7xl mx-auto font-light">
+        Our Team
+      </h1>
+    </div>
+  </section>
+  <section>
+    <div class="my-12 max-w-6xl md:mx-auto pl-4 md:pl-12 pr-4 mx-8">
+      {data.map((item) => (
+        <div class="mb-12 flex flex-col md:flex-row justify-between">
+          <div class="w-full md:w-1/3 mb-4 md:mb-0 pr-4 space-y-2">
+            <img src={item.photo} alt={item.name} class="rounded-full w-32 h-32 object-cover mb-4">
+            <h2 class="text-4xl font-serif font-light text-blue-900">{item.name}</h2>
+          </div>
+          <div class="w-full md:w-4/5 border-l-0 md:border-l-2 border-gray-300 pl-0 md:pl-6 text-base lg:text-xl text-gray-700 space-y-2">
+            <h2 class="text-4xl md:text-4xl lg:text-5xl font-serif font-light text-blue-900">{item.position}</h2>
+            <ul class="list-outside pl-5 space-y-1">
+              {item.description.map(desc => (
+                <li class="flex">❖<div class="ml-2">{desc}</div></li>
+              ))}
+            </ul>
+            <p><strong>Education:</strong></p>
+            <ul class="list-outside pl-5 space-y-1">
+              {item.education.map(edu => (
+                <li class="flex">❖<div class="ml-2">{edu}</div></li>
+              ))}
+            </ul>
+            {item.linkedin && (
+              <a href={item.linkedin} target="_blank" class="text-blue-500 underline">LinkedIn</a>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, and Opera */
+  }
+</style>

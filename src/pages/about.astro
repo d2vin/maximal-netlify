@@ -1,0 +1,154 @@
+---
+import Navbar from '../components/navbar';
+import Layout from '../layouts/Layout.astro';
+import { supabase } from "../lib/supabase";
+
+const { cookies, url } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+let user = null;
+
+let pathname = url.pathname;
+
+if (accessToken && refreshToken) {
+  const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+
+  if (!error) {
+    user = data.user ?? null;
+  } else {
+    cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+  }
+}
+
+const data = [
+  {
+    title: "37.79%",
+    subtitle: "Global Income Long Bias",
+    description:
+      "Maximal’s Global Income Long Bias strategy has consistently outperformed its benchmarks such as the MSCI World Index and the MSCI AC Div HY. Maximal's long returns to date from August 22 is 37.79% against its benchmarks' returns — MSCI World (29.91%) and MSCI AC Div HY (10.54%) over the same period.",
+  },
+  {
+    title: "$17B",
+    subtitle: "ESG Long Bias",
+    description:
+      "Maximal’s ESG long bias is rooted in the belief that ESG factors and long-term viable returns are not mutually exclusive. Maximal's team prior to joining Maximal, helped manage a US long bias product with an AUM (as of Dec 2017) of $17B.",
+  },
+  {
+    title: "$3B",
+    subtitle: "Equity Market Neutral",
+    description:
+      "Equity Market Neutral aims to provide a positive absolute return across economic cycles and provide low correlation to other asset classes to help create a diversified asset allocation. Maximal's team prior to joining Maximal, helped manage an EMN product with an AUM (as of Dec 2020) of $3B.",
+  },
+];
+
+const sections = data.map(item => ({
+  title: item.subtitle,
+  content: `
+    <div class="mb-12 flex flex-col md:flex-row justify-between">
+      <div class="w-full md:w-1/5 mb-4 md:mb-0 pr-4 space-y-2">
+        <h2 class="text-5xl md:text-3xl font-serif font-light text-blue-900">${item.subtitle}</h2>
+        <h2 class="text-5xl md:text-4xl lg:text-5xl font-serif font-light text-blue-900">${item.title}</h2>
+      </div>
+      <div class="w-full md:w-4/5 border-l-0 md:border-l-2 border-gray-300 pl-0 md:pl-6 text-base lg:text-xl text-gray-700">
+        <p>${item.description}</p>
+      </div>
+    </div>
+  `
+}));
+---
+
+<Layout title="Maximal Asset Management - About">
+  <section class="z-50 absolute">
+    <Navbar client:load pathname={pathname} user={user} />
+  </section>
+  <section class="relative flex items-center justify-center overflow-hidden pt-[400px] sm:pt-[500px] md:pt-[600px] lg:pt-[700px]">
+    <div class="mt-px video-container absolute left-12 top-24 w-auto min-h-full min-w-full max-h-[90vh] max-w-none object-cover bg-zinc-400 border-transparent" />
+    <video
+      autoplay
+      loop
+      muted
+      class="video-fade-in absolute left-12 top-24 w-auto min-h-full min-w-full max-h-[90vh] max-w-none object-cover"
+    >
+      <source
+        class="z-10"
+        src="/iStock-1341561076.mp4"
+        type="video/mp4"
+      />
+      Your browser does not support the video tag.
+    </video>
+    <div class="banner-grow absolute left-12 bottom-0 right-0 h-16 md:h-32 lg:h-16 bg-blue-900 opacity-90">
+      <h1 class="font-serif text-fade-in text-2xl sm:text-3xl md:text-4xl lg:text-7xl text-white text-left h-full flex items-center px-4 lg:px-8 w-full max-w-7xl mx-auto font-light">
+        Today, We Offer <br class="hidden lg:flex" />3 Investment Strategies
+      </h1>
+    </div>
+  </section>
+  <section>
+    <div class="my-12 max-w-6xl md:mx-auto pl-4 md:pl-12 pr-4 mx-8">
+      {sections.map((section, index) => (
+        <div set:html={section.content} />
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bannerGrow {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.video-container {
+  opacity: 0;
+  animation: fadeIn 1.5s ease-in-out forwards;
+}
+
+.text-fade-in {
+  opacity: 0;
+  animation: fadeIn 1s ease-in-out 3s forwards; /* Delayed to start after banner grow */
+}
+
+.video-fade-in {
+  animation: fadeIn 3s ease-in-out;
+}
+
+.banner-grow {
+  width: 0;
+  height: 50px; /* Default height for mobile screens */
+  animation: bannerGrow 2s ease-in-out 1s forwards; /* Delay to start after video starts */
+}
+
+@media (min-width: 768px) {
+  .banner-grow {
+    height: 100px; /* Adjusted height for medium screens */
+  }
+}
+
+@media (min-width: 1024px) {
+  .banner-grow {
+    height: 200px; /* Adjusted height for large screens */
+  }
+}
+</style>

@@ -1,0 +1,42 @@
+---
+import ContactComponent from '../components/contact';
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/navbar';
+import { supabase } from "../lib/supabase";
+
+const { cookies, redirect, url } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+let user = null;
+
+let pathname = url.pathname;
+
+if (accessToken && refreshToken) {
+  const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+
+  if (!error) {
+    user = data.user ?? null;
+  } else {
+    cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+  }
+}
+---
+
+<Layout title="Maximal Asset Management - Contact">
+  <section class="z-50 absolute">
+    <Navbar pathname={pathname} user={user} client:idle/>
+  </section>
+  <div class="flex justify-center py-24 min-h-screen">
+    <ContactComponent client:load />
+  </div>
+</Layout>

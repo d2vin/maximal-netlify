@@ -1,0 +1,49 @@
+---
+import Navbar from '../components/navbar';
+import SignupForm from '../components/signup-form';
+import Layout from '../layouts/Layout.astro';
+import { supabase } from "../lib/supabase";
+
+const { cookies, url } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+let user = null;
+
+let pathname = url.pathname;
+
+if (accessToken && refreshToken) {
+  const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+
+  if (!error) {
+    user = data.user ?? null;
+  } else {
+    cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+  }
+}
+---
+
+<Layout title="Maximal Asset Management - Sign up or Login">
+  <section class="z-50 absolute">
+    <Navbar pathname={pathname} user={user} client:idle />
+  </section>
+  <section class="py-24 h-screen space-y-8">
+    <video autoplay muted loop class="absolute inset-0 w-full h-full object-cover z-[-1]">
+      <source src="iStock-803920034.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <h2 class="text-3xl font-bold text-center text-white my-6">Sign up or Login</h2>
+    <div>
+    <SignupForm client:idle />
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,120 @@
+---
+import Navbar from '../components/navbar';
+import SwitchingVideo from '../components/switching-video';
+import Layout from '../layouts/Layout.astro';
+import { supabase } from "../lib/supabase";
+
+const { cookies, url } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+let user = null;
+
+let pathname = url.pathname;
+
+if (accessToken && refreshToken) {
+  const { data, error } = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+
+  if (!error) {
+    user = data.user ?? null;
+  } else {
+    cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+  }
+}
+
+const data = [
+  {
+    name: "SS&C Technologies",
+    position: "Fund Administrator",
+    description: "Maximal’s fund administrator is SS&C Technologies. $45 trillion+ assets run on SS&C Technologies. It has 27,000 employees around the globe.",
+    photo: "ssc.jpg",
+    linkedin: "",
+  },
+  {
+    name: "RFA",
+    position: "Cyber Security Provider",
+    description: "RFA provides cyber security for its clients whose AUM total $1 trillion. RFA has 900+ clients and provides 24/7 monitoring of its clients’ security.",
+    photo: "rfa.svg",
+    linkedin: "",
+  },
+  {
+    name: "Goldman Sachs",
+    position: "Broker",
+    description: "Goldman Sachs is Maximal’s broker via Velocity Clearing LLC.",
+    photo: "goldman.svg",
+    linkedin: "",
+  },
+  {
+    name: "WayStone Compliance Solutions",
+    position: "Compliance Solutions Provider",
+    description: "WayStone aims to provide key services to Maximal from initial registration and licensing to compliance program integration. Its compliance solutions cover business strategies, market activities, operational and technology infrastructure, and other procedures.",
+    photo: "waystone.jpg",
+    linkedin: "",
+  },
+  {
+    name: "Seward & Kissel LLP",
+    position: "Legal Representative",
+    description: "Maximal’s legal representative is Seward & Kissel, founded in 1890, a leading U.S. law firm with an international reputation for excellence. It has offices in New York City and Washington, D.C.",
+    photo: "seward.jpg",
+    linkedin: "",
+  },
+];
+
+const sections = data.map(item => ({
+  title: item.name,
+  content: `
+    <div class="mb-12 flex flex-col md:flex-row justify-between">
+      <div class="w-full md:w-2/5 mb-4 md:mb-0 pr-4 space-y-2">
+        <img src="${item.photo}" alt="${item.name}" class="w-32 h-32 mb-4 ${item.photo === 'rfa.svg' ? 'invert' : ''}">
+        <h2 class="text-3xl font-serif font-light text-blue-900">${item.position}</h2>
+      </div>
+      <div class="w-full md:w-4/5 border-l-0 md:border-l-2 border-gray-300 pl-0 md:pl-6 text-base lg:text-xl text-gray-700 space-y-2">
+        <h2 class="text-5xl md:text-4xl lg:text-5xl font-serif font-light text-blue-900">${item.name}</h2>
+        <p>${item.description}</p>
+        ${item.linkedin ? '<a href="${item.linkedin}" target="_blank" class="text-blue-500 underline">LinkedIn</a>' : ''}
+      </div>
+    </div>
+  `
+}));
+---
+
+<Layout title="Maximal Asset Management - Service Providers">
+  <section class="z-50 absolute">
+    <Navbar pathname={pathname} user={user} client:idle />
+  </section>
+  <section class="relative flex items-center justify-center overflow-hidden pt-[400px] sm:pt-[500px] md:pt-[600px] lg:pt-[700px]">
+    <div class="mt-px video-container absolute left-12 top-24 w-auto min-h-full min-w-full max-h-[90vh] max-w-none object-cover bg-blue-900 border-transparent" />
+    <SwitchingVideo client:load />
+    <div class="banner-grow absolute left-12 bottom-0 right-0 h-16 md:h-32 lg:h-16 bg-blue-900 opacity-90">
+      <h1 class="text-fade-in font-serif text-2xl sm:text-3xl md:text-4xl lg:text-7xl text-white text-left h-full flex items-center px-4 lg:px-8 w-full max-w-7xl mx-auto font-light">
+        Our Service Providers
+      </h1>
+    </div>
+  </section>
+  <section>
+    <div class="my-12 max-w-6xl md:mx-auto pl-4 md:pl-12 pr-4 mx-8">
+      {sections.map((section, index) => (
+        <div set:html={section.content} />
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, and Opera */
+  }
+</style>
